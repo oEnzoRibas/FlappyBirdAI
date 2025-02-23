@@ -1,4 +1,6 @@
-import copy,os,pygame
+import copy, os, pygame
+
+pygame.init()
 
 ASSET_PATH = "Project/assets"
 
@@ -33,9 +35,17 @@ sprites_dict = {
     "pipe": "sprites/pipe/pipe.png"
 }
 
+def scale_image(image, scale_factor):
+    width, height = image.get_size()
+    return pygame.transform.scale(image, (int(width * scale_factor), int(height * scale_factor)))
+
+SCALE_FACTOR = 2
+
 for key, value in copy.deepcopy(sprites_dict).items():
     if isinstance(value, list):
         for index, value in enumerate(value):
-            sprites_dict[key][index] = pygame.image.load(os.path.join(ASSET_PATH, value))
+            image = pygame.image.load(os.path.join(ASSET_PATH, value))
+            sprites_dict[key][index] = scale_image(image, SCALE_FACTOR)
     else:
-        sprites_dict[key] = pygame.image.load(os.path.join(ASSET_PATH, value))
+        image = pygame.image.load(os.path.join(ASSET_PATH, value))
+        sprites_dict[key] = scale_image(image, SCALE_FACTOR)
