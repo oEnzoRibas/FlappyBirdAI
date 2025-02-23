@@ -9,16 +9,6 @@ pygame.font.init()
 WIN_WIDTH = 500
 WIN_HEIGHT = 800
 
-# BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird1.png"))),
-#              pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird2.png"))),
-#                pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird3.png")))]
-
-# PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "pipe.png")))
-
-# BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/base", "base.png")))
-
-# BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bg.png")))
-
 BIRD_IMGS = sprites_dict['bird']
 
 PIPE_IMG = sprites_dict['pipe']
