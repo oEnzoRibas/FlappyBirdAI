@@ -3,75 +3,101 @@ from assets.__init__ import sprites_dict
 
 class Bird:
     IMGS = sprites_dict['bird']
-    MAX_ROTATION = 25
-    ROT_VEL = 20
-    ANIMATION_TIME = 5
+    MAX_ROTATION = 30
+    MIN_ROTATION = -50
+    ROT_VEL = 40
+    state_cycle_rate = 5
 
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
+        self.state = 0
+        self.animation_tick = 0
+        self.tilt_tick = 0
         self.tilt = 0
-        self.tick_count = 0
         self.vel = 0
-        self.height = self.y
+        self._rect = None
+        self.height = self._y
         self.img_count = 0
-        self.img = self.IMGS[0]
+        self.img = [bird.convert_alpha() for bird in self.IMGS]
+    
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
+    
+    @property
+    def rect(self):
+        return self._rect
 
     def jump(self):
-        self.vel = -10.5
-        self.tick_count = 0
-        self.height = self.y
+        self.vel = 14.5
+        self.calculate_new_y()
 
-    def move(self):
-        self.tick_count += 1
+        self.tilt_up()
 
-        # definition of the gravity mechanics
-        # d is how much the bird is going to fall on the y axis
-        # 
+    def do_nothing(self):
+        self.vel -=1
+        self.calculate_new_y()
 
-        d = self.vel*self.tick_count + 1.5*self.tick_count**2 # v*t + 1.5*t^2
+        self.tilt_down()
 
-        if d >= 16:
-            d = 16
-        
-        if d < 0:
-            d-= 2
+    def calculate_new_y(self):
+        if self.vel > 12:
+            self.vel = 12
 
-        self.y = self.y + d
+        self._y -= self.vel
 
-        # this determines the bird tilting in relation to his movement
+    def tilt_down(self):
+        self.tilt_tick += 1
 
-        if d < 0 or self.y < self.height + 50:
-            if self.tilt < self.MAX_ROTATION:
-                self.tilt = self.MAX_ROTATION
+        if self.tilt_tick > 15:
+            self.tilt -= 10
+            self.tilt_handler()
+
+    def tilt_up(self):
+        self.tilt = 20
+        self.tilt_handler()
+
+        self.tilt_tick = 0
+
+    def tilt_handler(self):
+        if self.tilt > self.MAX_ROTATION:
+            self.tilt = self.MAX_ROTATION
+        elif self.tilt < self.MIN_ROTATION:
+            self.tilt = self.MIN_ROTATION
+
+    def flap_animation_tick_handler(self):
+        if self.tilt == self.MIN_ROTATION:
+            self.state = 1
         else:
-            if self.tilt > -70:
-                self.tilt -= self.ROT_VEL
+            self.animation_tick += 1
 
-        # print("{} {}".format(self.y,d))
+            if self.animation_tick >= Bird.state_cycle_rate:
+                self.cycle_bird_state()
+                self.animation_tick = 0
+
+
+    @staticmethod
+    def tilt_bird(image, angle):
+        tilted_bird = pygame.transform.rotate(image, angle)
+
+        return tilted_bird
+
+    def cycle_bird_state(self):
+        self.state += 1
+
+        if self.state > 2:
+            self.state = 0
 
     def draw(self,win):
-        self.img_count += 1
+        self.flap_animation_tick_handler()
 
-        if self.img_count < self.ANIMATION_TIME:
-            self.img = self.IMGS[0]
-        elif self.img_count < self.ANIMATION_TIME*2:
-            self.img = self.IMGS[1]
-        elif self.img_count < self.ANIMATION_TIME*3:
-            self.img = self.IMGS[2]
-        elif self.img_count < self.ANIMATION_TIME*4:
-            self.img = self.IMGS[1]
-        elif self.img_count == self.ANIMATION_TIME*4 + 1:
-            self.img = self.IMGS[0]
-            self.img_count = 0
-
-        if self.tilt <= -80:
-            self.img = self.IMGS[1]
-            self.img_count = self.ANIMATION_TIME*2
-
-        rotated_image = pygame.transform.rotate(self.img, self.tilt)
-        new_rect = rotated_image.get_rect(center=self.img.get_rect(topleft = (self.x, self.y)).center)
-        win.blit(rotated_image, new_rect.topleft)
+        self._rect = win.blit(self.tilt_bird(self.img[self.state], self.tilt), (self._x, self._y))
 
     def get_mask(self):
-        return pygame.mask.from_surface(self.img)
+        mask = pygame.mask.from_surface(self.tilt_bird(self.img[self.state], self.tilt))
+        return mask

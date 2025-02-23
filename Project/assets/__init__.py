@@ -5,7 +5,7 @@ pygame.init()
 ASSET_PATH = "Project/assets"
 
 sprites_dict = {
-    "numbers": [
+    "nums": [
         "sprites/nums/0.png",
         "sprites/nums/1.png",
         "sprites/nums/2.png",
@@ -19,7 +19,7 @@ sprites_dict = {
     ],
     
     "gameover": "sprites/messages/gameover.png",
-    "message": "sprites/messages/startgame.png",
+    "startgame": "sprites/messages/startgame.png",
 
     "bg-day": "sprites/background/bg_day.png",
     "bg-night": "sprites/background/bg_night.png",

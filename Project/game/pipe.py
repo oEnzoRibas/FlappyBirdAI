@@ -5,6 +5,7 @@ class Pipe:
     PIPE_IMG = sprites_dict['pipe']
     GAP = 200
     VEL = 5
+    INTERVAL = 380
 
     def __init__(self, x):
         self.x = x
