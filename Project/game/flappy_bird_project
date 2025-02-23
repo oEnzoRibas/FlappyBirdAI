@@ -3,20 +3,34 @@ import neat
 import time
 import os
 import random
+from __init__ import sprites_dict
 pygame.font.init()
 
 WIN_WIDTH = 500
 WIN_HEIGHT = 800
 
-BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bird1.png"))),
-              pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bird2.png"))),
-                pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bird3.png")))]
+# BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird1.png"))),
+#              pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird2.png"))),
+#                pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "bird3.png")))]
 
-PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "pipe.png")))
+# PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/", "pipe.png")))
 
-BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "base.png")))
+# BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("assets\sprites/base", "base.png")))
 
-BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bg.png")))
+# BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Assets/imgs", "bg.png")))
+
+BIRD_IMGS = sprites_dict['bird']
+
+PIPE_IMG = sprites_dict['pipe']
+BASE_IMG = sprites_dict['base']
+BG_IMG = sprites_dict['bg-day']
+
+for i in range(len(BIRD_IMGS)):
+    BIRD_IMGS[i] = pygame.transform.scale2x(BIRD_IMGS[i])
+
+PIPE_IMG = pygame.transform.scale2x(PIPE_IMG)
+BASE_IMG = pygame.transform.scale2x(BASE_IMG)
+BG_IMG = pygame.transform.scale2x(BG_IMG)
 
 STAT_FONT = pygame.font.SysFont("comicsans",50)
 
