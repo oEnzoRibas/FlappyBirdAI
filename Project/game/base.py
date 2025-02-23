@@ -28,3 +28,9 @@ class Base:
     def draw(self,win):
         win.blit(self.IMG, (self.x1, self.y))
         win.blit(self.IMG, (self.x2, self.y))
+
+    def collide(self, bird):
+        # Bird has crashed at the base
+        if bird.rect.bottom >= self.y:
+            return True
+        return False
