@@ -1,4 +1,5 @@
 import pygame, random
+import math
 from assets.__init__ import sprites_dict
 
 class Pipe:
@@ -39,10 +40,10 @@ class Pipe:
 
         top_offset = (
             self.x - bird.x, 
-            self.top - round(bird.y))
+            self.top - math.ceil(bird.y))
         bottom_offset = (
             self.x - bird.x, 
-            self.bottom - round(bird.y))
+            self.bottom - math.ceil(bird.y))
         
         #checks if the bird's mask overlaps with any of the pipe's mask and 
         # return the point of overlapping or None if there is no overlapping

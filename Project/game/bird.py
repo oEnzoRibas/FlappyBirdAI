@@ -34,7 +34,7 @@ class Bird:
         return self._rect
 
     def jump(self):
-        self.vel = 14.5
+        self.vel = 19.5
         self.calculate_new_y()
 
         self.tilt_up()
@@ -93,7 +93,7 @@ class Bird:
         if self.state > 2:
             self.state = 0
 
-    def draw(self,win):
+    def draw(self, win):
         self.flap_animation_tick_handler()
 
         self._rect = win.blit(self.tilt_bird(self.img[self.state], self.tilt), (self._x, self._y))

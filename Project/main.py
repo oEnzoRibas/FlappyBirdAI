@@ -152,7 +152,7 @@ def main():
         
         jump = False
 
-        clock.tick(40)
+        clock.tick(60)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
