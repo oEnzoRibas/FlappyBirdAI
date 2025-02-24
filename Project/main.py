@@ -197,6 +197,9 @@ def main():
             while crashed:
                 gameover_text(win)
                 pygame.display.update()
+                
+                
+                
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         quit_game()
@@ -207,7 +210,9 @@ def main():
                         
                         elif event.key == pygame.K_r: #r Key
                             restart()
-        
+                    
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:#Left Mouse Button
+                        restart()
         pygame.display.update() 
     pygame.quit()
     quit()
