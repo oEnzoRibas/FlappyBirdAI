@@ -1,6 +1,8 @@
 import pygame
 import sys
+import os
 import math
+import neat
 from assets.__init__ import sprites_dict
 from game.bird import Bird
 from game.pipe import Pipe
@@ -49,7 +51,7 @@ def setup_game_window():
     return screen
 
 def init_game_elements():
-    bird = Bird(230,350)
+    birds = []
     base1 = Base(0, WIN_HEIGHT - Base.height + 200)
     base2 = Base(Base.width, WIN_HEIGHT- Base.height + 200)
     pipe1 = Pipe(700)
@@ -58,7 +60,7 @@ def init_game_elements():
     
 
     return {
-        "bird": bird,
+        "birds": birds,
         "bases": [base1,base2],
         "pipes": [pipe1,pipe2],
         "score": score
@@ -78,6 +80,7 @@ def score_handler(bird, pipes, score):
             if bird.x >= (pipe.x + pipe.x) and not pipe.passed:
                 score.score += 1
                 pipe.passed = True
+                return True
 
 def base_animation_handler(bases):
     for index, base in enumerate(bases,start=0):
@@ -86,31 +89,14 @@ def base_animation_handler(bases):
         if base.x + sprites_dict['base'].get_width() <= 0:
             base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
 
-def check_crash(bird, bases, pipes):
-    for b, base in zip(bird.img, bases):
-    
-        if bird.y + b.get_height() >= base._y:
-            return True
-    
+def check_crash(bird, bases, pipes):   
+    for b_img, base in zip(bird.img, bases):
+            if base.collide(bird,b_img):
+                return True
 
     for pipe in pipes:
-        bird_mask = bird.get_mask()
-        top_mask = pygame.mask.from_surface(pipe.PIPE_TOP)
-        bottom_mask = pygame.mask.from_surface(pipe.PIPE_BOTTOM)
-
-        bottom_offset = tuple(map(math.ceil, (pipe.x - bird.x, pipe.bottom - bird.y)))
-        top_offset = tuple(map(math.floor, (pipe.x - bird.x, pipe.top - bird.y)))
-
-        #checks if the bird's mask overlaps with any of the pipe's mask and 
-        # return the point of overlapping or None if there is no overlapping
-        b_point = bird_mask.overlap(bottom_mask, bottom_offset)
-        t_point = bird_mask.overlap(top_mask, top_offset)
-
-        if t_point or b_point:
-            return True
-        
-        elif bird.y < 0 and pipe.x < bird.x < (pipe.x + pipe.x):
-            return True
+            if pipe.collide(bird):
+                return True
 
     return False
 
@@ -126,11 +112,18 @@ def startgame_text(win):
 
 def restart():
     main()
-    print("ASD")
-    
 
-def main():
+def handle_gameover(event):
+    if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE)):
+        quit_game()
+        pygame.quit()
+        quit()
+                        
+def handle_restart(event):
+    if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+        restart()
 
+def main(genomes, config):
     pygame.init()
 
     win = setup_game_window()
@@ -141,8 +134,18 @@ def main():
 
     bases = elements_dict["bases"]
     pipes = elements_dict["pipes"]
-    bird = elements_dict["bird"]
+    birds = elements_dict["birds"]
     score = elements_dict['score']
+
+    nets = []
+    ge = []
+
+    for _, g in genomes:
+        net = neat.nn.FeedForwardNetwork.create(g, config)
+        nets.append(net)
+        birds.append(Bird(230,350))
+        g.fitness = 0
+        ge.append(g)
 
     run = True
     crashed = False
@@ -152,23 +155,29 @@ def main():
         
         jump = False
 
-        clock.tick(60)
+        clock.tick(30)
         
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit_game()
+            handle_gameover(event)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE: #ESC Key
-                    quit_game()
-                
-                elif event.key == pygame.K_SPACE or event.key == pygame.K_UP: #Space Key or UP Arrow
-                    jump = True
-                    start = True
+        pipe_ind = 0
+        if len(birds) > 0:
+            if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():
+                pipe_ind = 1
+        else:
+            run = False
+            break
 
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:#Left Mouse Button
-                    jump = True
-                    start = True
+        for index, bird in enumerate(birds):
+            start = True
+            ge[index].fitness += 0.01
+
+            output = nets[index].activate((bird.y,
+                                            abs(bird.y - pipes[pipe_ind].height),
+                                                abs(bird.y - pipes[pipe_ind].bottom)))
+            if output[0] > 0.5:    
+                jump = True
+                bird.do_nothing()
                 
 
     
@@ -178,19 +187,32 @@ def main():
 
             if start:
 
-                draw_window(win, bird, pipes, bases, score)
-                pipes_animation_handler(pipes)
-                base_animation_handler(bases)
+                for index, bird in enumerate(birds):
+                    draw_window(win, bird, pipes, bases, score)
+                    pipes_animation_handler(pipes)
+                    base_animation_handler(bases)
+                    #print(f"index {index} bird {bird}")
 
-                if jump:
-                    bird.jump()
+                    if jump:
+                        bird.do_nothing()
+                        bird.jump()
 
-                else: bird.do_nothing()
+                    else: bird.do_nothing()
 
-                score_handler(bird,pipes,score)
+                    if check_crash(bird,bases,pipes):
+                        ge[index].fitness -= 1
+                        birds.pop(index)
+                        nets.pop(index)
+                        ge.pop(index)
+                        #crashed = True
 
-                if check_crash(bird,bases,pipes):
-                    crashed = True
+                    if score_handler(bird,pipes,score):
+                        for g in ge:
+                            g.fitness += 2
+                        birds.pop(index)
+                        nets.pop(index)
+                        ge.pop(index)
+
 
             else: startgame_text(win)
         else:
@@ -198,24 +220,27 @@ def main():
                 gameover_text(win)
                 pygame.display.update()
                 
-                
-                
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        quit_game()
+                    handle_gameover(event)
+                    handle_restart(event)
 
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE: #ESC Key
-                            quit_game()
-                        
-                        elif event.key == pygame.K_r: #r Key
-                            restart()
-                    
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:#Left Mouse Button
-                        restart()
-        pygame.display.update() 
-    pygame.quit()
-    quit()
+        #pygame.display.update() 
 
-if __name__ == '__main__':        
-    main()
+def run(config_path):
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                config_path)
+    
+    pop = neat.Population(config)
+
+    pop.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    pop.add_reporter(stats)
+
+    winner = pop.run(main, 50)
+
+
+if __name__ == '__main__':
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, "neat.config.txt")
+    run(config_path)

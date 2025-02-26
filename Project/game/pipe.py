@@ -38,19 +38,18 @@ class Pipe:
         top_mask = pygame.mask.from_surface(self.PIPE_TOP)
         bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
 
-        top_offset = (
-            self.x - bird.x, 
-            self.top - math.ceil(bird.y))
-        bottom_offset = (
-            self.x - bird.x, 
-            self.bottom - math.ceil(bird.y))
-        
+        bottom_offset = tuple(map(math.ceil, (self.x - bird.x, self.bottom - bird.y)))
+        top_offset = tuple(map(math.floor, (self.x - bird.x, self.top - bird.y)))
+
         #checks if the bird's mask overlaps with any of the pipe's mask and 
         # return the point of overlapping or None if there is no overlapping
         b_point = bird_mask.overlap(bottom_mask, bottom_offset)
         t_point = bird_mask.overlap(top_mask, top_offset)
 
         if t_point or b_point:
+            return True
+        
+        elif bird.y < 0 and self.x < bird.x < (self.x + self.x):
             return True
         
         return False

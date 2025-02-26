@@ -27,6 +27,10 @@ class Base:
     def x(self, val):
         self._x = val
 
+    def collide(self,bird,bird_img):
+        if bird.y + bird_img.get_height() >= self._y:
+            return True
+        
     def move(self):
         self._x -= self.VEL
 
