@@ -32,6 +32,11 @@ class Pipe:
     def draw(self, win):
         win.blit(self.PIPE_TOP, (self.x, self.top))
         win.blit(self.PIPE_BOTTOM, (self.x, self.bottom))
+    
+    def get_mask(self):
+        masks = [pygame.mask.from_surface(pipe) for pipe in [self.PIPE_TOP, self.PIPE_BOTTOM]]
+
+        return masks
 
     def collide(self, bird):
         bird_mask = bird.get_mask()
