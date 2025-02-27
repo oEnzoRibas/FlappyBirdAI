@@ -37,8 +37,7 @@ def draw_window(win, birds, pipes, bases, score, bird_counter, geneation_counter
     for base in bases:
         base.draw(win)
 
-    for x, bird in enumerate(birds):
-        print(x)
+    for bird in (birds):
         bird.draw(win)
 
     score.draw(win)
@@ -114,15 +113,18 @@ def score_handler(birds, pipes, score, pipe_index, genomes):
         if not check_generation_crash(birds):
                 
             for pipe, bird in zip(pipes,birds):
-                if bird.x >= (pipe.x + pipe.x) and not pipe.passed:
+                if bird.x >= (pipe.x + pipe.PIPE_TOP.get_width()) and not pipe.passed:
                     score.score += 1
                     pipe.passed = True
 
                     if pipe_index == 0:
-                        pipe_index == 1
-                    else: pipe_index == 0
+                        pipe_index = 1
+                    else: pipe_index = 0
 
                     for genome_id, genome in genomes:
+                        print(f"Quantidade de pássaros vivos: {len(birds)}")
+                        print(f"Pipe Index: {pipe_index}, Pipe X: {pipes[pipe_index].x}")
+                        print(f"Geração: {population.generation}")
                         genome.fitness += 5
 
 def base_animation_handler(bases):
@@ -132,74 +134,62 @@ def base_animation_handler(bases):
         if base.x + sprites_dict['base'].get_width() <= 0:
             base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
 
+def check_crash(game_elements_dict):
+    
+    import math
+
 def check_crash(game_elements_dict):   
+    """
+    Verifica colisões entre os pássaros e os elementos do jogo (bases e canos).
+    Remove pássaros que colidirem e penaliza seus genomas.
 
-    # Hit base
-    indices_to_remove = []
-    for index, bird in enumerate(game_elements_dict['birds'], start=0):
+    THE OVERLAP METHOD KILLS THE APP (SO MUCH COMPUTACIONAL COST)
+    """
 
-        if bird.rect.collidelist([item.rect for item in game_elements_dict['bases']]) != -1:
-            game_elements_dict['genomes'][index][1].fitness -= 10
-            indices_to_remove.append(index)
-            continue
+    birds = game_elements_dict['birds']
+    pipes = game_elements_dict['pipes']
+    bases = game_elements_dict['bases']
+    genomes = game_elements_dict['genomes']
+    networks = game_elements_dict['networks']
 
-        # Calculate offset for pipe
-        for pipe in game_elements_dict['pipes']:
-            # Lower pipe
-            lower_pipe_offset = tuple(map(math.ceil, (pipe.x - bird.x, pipe.top - bird.y)))
-            # Upper pipe
-            upper_pipe_offset = tuple(map(math.floor, (pipe.x - bird.x, pipe.bottom - bird.y)))
+    to_remove = []
 
-            # Hit lower pipe
-            if bird.get_mask().overlap(pipe.get_mask()[0], lower_pipe_offset):
-                game_elements_dict['genomes'][index][1].fitness -= 1
-                indices_to_remove.append(index)
+    # Verifica colisão com a base (bounding box)
+    for index in range(len(birds)):
+        bird = birds[index]
+
+        # Verifica colisão com o chão
+        if any(bird.rect.colliderect(base.rect) for base in bases):
+            genomes[index][1].fitness -= 50
+            to_remove.append(index)
+            continue  # Pula para o próximo pássaro
+
+        # Verifica colisão com os canos
+        for pipe in pipes:
+            if bird.rect.colliderect(pipe.rect_top) or bird.rect.colliderect(pipe.rect_bottom):
+                # Se a bounding box bateu, faz a verificação de `overlap()`
+                if bird.get_mask().overlap(pipe.get_mask()[0], (pipe.x - bird.x, pipe.top - bird.y)):
+                    genomes[index][1].fitness -= 1
+                    to_remove.append(index)
+                    break  # Já colidiu, não precisa testar mais canos
+
+                if bird.get_mask().overlap(pipe.get_mask()[1], (pipe.x - bird.x, pipe.bottom - bird.y)):
+                    genomes[index][1].fitness -= 1
+                    to_remove.append(index)
+                    break  # Já colidiu, não precisa testar mais canos
+
+            # Se o pássaro ultrapassar o topo da tela enquanto está em um cano
+            if bird.y < 0 and pipe.x < bird.x < (pipe.x + pipe.PIPE_TOP.get_width()):
+                genomes[index][1].fitness -= 50
+                to_remove.append(index)
                 break
 
-            # Hit upper pipe
-            elif bird.get_mask().overlap(pipe.get_mask()[1], upper_pipe_offset):
-                game_elements_dict['genomes'][index][1].fitness -= 1
-                indices_to_remove.append(index)
-                break
-
-            # Check if bird is above the sky limit and in a pipe
-            elif bird.y < 0 and pipe.x < bird.x < (pipe.x + pipe.x):
-                game_elements_dict['genomes'][index][1].fitness -= 10
-                indices_to_remove.append(index)
-                break
-
-    for index in sorted(indices_to_remove, reverse=True):
-        del game_elements_dict['networks'][index]
-        del game_elements_dict['genomes'][index]
-        del game_elements_dict['birds'][index]
-
-
-    # hits a base or a pipe over the sky
-    # for index, bird in enumerate(birds, start=0):
-    #     print(f"genomes length: {len(genomes)}, index: {index}")
-    #     for b_img, base in zip(bird.img, bases):
-    #             if base.collide(bird,b_img):
-                    
-                       
-    #                 if index < len(genomes):
-    #                     genomes[index][1].fitness -= 10
-    #                 else:
-    #                     print(f"Index {index} is out of range for genomes list of length {len(genomes)}")
-                    
-    #                 del networks[index]
-    #                 del genomes[index]
-    #                 del birds[index]
-    # # hits a pipe
-    #     for pipe in pipes:
-    #             if pipe.collide(bird):
-    #                 if index < len(genomes):
-    #                     genomes[index][1].fitness -= 1
-    #                 else:
-    #                     print(f"Index {index} is out of range for genomes list of length {len(genomes)}")
-                    
-    #                 del networks[index]
-    #                 del genomes[index]
-    #                 del birds[index]
+    # Remove pássaros e seus dados (de trás para frente para evitar reindexação)
+    for index in reversed(to_remove):
+        del networks[index]
+        del genomes[index]
+        del birds[index]
+    
 
 def check_generation_crash(birds):
     if len(birds) == 0:
@@ -229,6 +219,8 @@ def handle_restart(event):
     if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
         restart()
 
+
+                        
 def fitness(genomes, config):
     pygame.init()
 
@@ -284,6 +276,7 @@ def fitness(genomes, config):
 
             check_crash(elements_dict)
 
+
             score_handler(birds,pipes,score, pipe_index, genomes)
 
             if check_generation_crash(birds):
@@ -332,3 +325,6 @@ if __name__ == '__main__':
     # Visualize fitness graph
     print("Saving fitness graph...")
     #plot_fitness_graph(statistics)
+
+
+
