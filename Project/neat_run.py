@@ -24,8 +24,31 @@ BG_IMG = sprites_dict['bg-night']
 
 STAT_FONT = pygame.font.SysFont("comicsans",50)
 
+def startgame_text(win):
+        win.blit(sprites_dict['startgame'].convert_alpha(),
+             (((WIN_WIDTH / 2)) - (sprites_dict['startgame'].get_width() / 2),
+             (WIN_HEIGHT / 2) - (sprites_dict['startgame'].get_height() / 2)))       
+
+def gameover_text(win):
+    win.blit(sprites_dict['gameover'].convert_alpha(),
+             (((WIN_WIDTH / 2)) - (sprites_dict['gameover'].get_width() / 2),
+             (WIN_HEIGHT / 2) - (sprites_dict['gameover'].get_height() / 2)))         
+    
 def quit_game():
     sys.exit()
+
+def handle_quit(event):
+    if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE)):
+        quit_game()
+        pygame.quit()
+        quit()
+
+def restart():
+    fitness()
+
+def handle_restart(event):
+    if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+        restart()
 
 def draw_window(win, birds, pipes, bases, score, bird_counter, geneation_counter):
     
@@ -106,6 +129,13 @@ def pipes_animation_handler(pipe_list):
             pipe.passed = False
             pipe.x = pipe_list[index-1].x + pipe.INTERVAL
 
+def base_animation_handler(bases):
+    for index, base in enumerate(bases,start=0):
+        base.move()
+
+        if base.x + sprites_dict['base'].get_width() <= 0:
+            base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
+            
 def get_closest_pipe_index(bird, pipes):
     """
     Retorna o índice do cano mais próximo que está à frente do pássaro.
@@ -146,13 +176,6 @@ def score_handler(birds, pipes, score, pipe, genomes):
 
                     for genome_id, genome in genomes:
                         genome.fitness += 5 
-
-def base_animation_handler(bases):
-    for index, base in enumerate(bases,start=0):
-        base.move()
-
-        if base.x + sprites_dict['base'].get_width() <= 0:
-            base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
 
 def check_crash(game_elements_dict):   
     """
@@ -205,30 +228,7 @@ def check_crash(game_elements_dict):
 def check_generation_crash(birds):
     if len(birds) == 0:
         return True
-    else: return False
-
-def gameover_text(win):
-    win.blit(sprites_dict['gameover'].convert_alpha(),
-             (((WIN_WIDTH / 2)) - (sprites_dict['gameover'].get_width() / 2),
-             (WIN_HEIGHT / 2) - (sprites_dict['gameover'].get_height() / 2)))
-
-def startgame_text(win):
-        win.blit(sprites_dict['startgame'].convert_alpha(),
-             (((WIN_WIDTH / 2)) - (sprites_dict['startgame'].get_width() / 2),
-             (WIN_HEIGHT / 2) - (sprites_dict['startgame'].get_height() / 2)))
-
-def restart():
-    fitness()
-
-def handle_quit(event):
-    if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE)):
-        quit_game()
-        pygame.quit()
-        quit()
-                        
-def handle_restart(event):
-    if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
-        restart()
+    else: return False        
                         
 def fitness(genomes, config):
     pygame.init()
@@ -250,7 +250,6 @@ def fitness(genomes, config):
 
     run = True
     crashed = False
-    start = False
     
     while run:
 
@@ -271,14 +270,13 @@ def fitness(genomes, config):
                 #print(f"index {index} bird {bird}")
 
                 genomes[index][1].fitness += 0.1
-                
-                
-                
+            
                 pipe_index = get_closest_pipe_index(bird, pipes)
                 bird_height = (bird.y)
                 pipe_top_height = (pipes[pipe_index].top)
                 pipe_bottom_height = (pipes[pipe_index].bottom)
                 #print(f"pipe index: {pipe_index}")
+
                 # passing to the model the bird location, pipes location
                 output = networks[index].activate(((bird_height),
                                                 abs(bird_height - pipe_top_height),
@@ -290,7 +288,6 @@ def fitness(genomes, config):
                     bird.do_nothing()
 
             check_crash(elements_dict)
-
 
             score_handler(birds,pipes,score, pipe_index, genomes)
 
