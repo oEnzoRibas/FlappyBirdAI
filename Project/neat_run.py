@@ -23,16 +23,6 @@ BASE_IMG = sprites_dict['base']
 BG_IMG = sprites_dict['bg-night']
 
 STAT_FONT = pygame.font.SysFont("comicsans",50)
-
-def startgame_text(win):
-        win.blit(sprites_dict['startgame'].convert_alpha(),
-             (((WIN_WIDTH / 2)) - (sprites_dict['startgame'].get_width() / 2),
-             (WIN_HEIGHT / 2) - (sprites_dict['startgame'].get_height() / 2)))       
-
-def gameover_text(win):
-    win.blit(sprites_dict['gameover'].convert_alpha(),
-             (((WIN_WIDTH / 2)) - (sprites_dict['gameover'].get_width() / 2),
-             (WIN_HEIGHT / 2) - (sprites_dict['gameover'].get_height() / 2)))         
     
 def quit_game():
     sys.exit()
@@ -43,28 +33,42 @@ def handle_quit(event):
         pygame.quit()
         quit()
 
-def restart():
-    fitness()
+def draw_window(win, birds, pipes, bases, score, bird_counter, generation_counter):
+    """
+        Draws/Renders the instaces for the game
 
-def handle_restart(event):
-    if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
-        restart()
+        :param win: type: pygame.surface
+            game screen
 
-def draw_window(win, birds, pipes, bases, score, bird_counter, geneation_counter):
+        :param birds: type: list
+            list containing all bird objects
+
+        :param pipes: type: list
+            list containing all pipe objects
+        
+        :param bases: type: list
+            list containing all base objects
+
+        :param bird_counter: type: font
+
+        :param generation_counter: type: font
+
+        :param score: type: Score obj
+    """
     
     bg = "bg-night" if score.score % 50 == 0 and score.score > 0 else "bg-day"
     win.blit(sprites_dict[bg], (0,0))
     
     for pipe in pipes:
         pipe.draw(win)
+
+    score.draw(win)
    
     for base in bases:
         base.draw(win)
 
     for bird in (birds):
         bird.draw(win)
-
-    score.draw(win)
 
     bird_counter = pygame.font.SysFont("arialbd", 36).render("Birds: {}".format(len(birds)), True, (255, 255, 255))
     win.blit(bird_counter, (10, 10))
@@ -121,6 +125,14 @@ def init_game_elements(genomes):
     }
 
 def pipes_animation_handler(pipe_list):
+    """
+    Controls when and how the Pipes should be moving on the screen
+
+    Each time one pipe passes the end of the screen it gets repositioned for the end of the end again
+
+    :param pipe_list: type: list
+        list containing all pipes
+    """
     for index, pipe in enumerate(pipe_list, start=0):
         pipe.move()
 
@@ -130,6 +142,14 @@ def pipes_animation_handler(pipe_list):
             pipe.x = pipe_list[index-1].x + pipe.INTERVAL
 
 def base_animation_handler(bases):
+    """
+    Controls when and how the Bases should be moving on the screen
+
+    Each time one bases passes the end of the screen it gets repositioned for the end of the end again
+
+    :param bases: type: list
+        list containing all base objects
+    """
     for index, base in enumerate(bases,start=0):
         base.move()
 
@@ -138,27 +158,43 @@ def base_animation_handler(bases):
             
 def get_closest_pipe_index(bird, pipes):
     """
-    Retorna o índice do cano mais próximo que está à frente do pássaro.
-    Garante que só muda quando o pássaro ultrapassa completamente o cano.
+    Returns the index of closest pipe from the bird
+
+    :param birds: type: list
+        list containing all bird objects
+
+    :param pipes: type: list
+        list containing all pipe objects
     """
     closest_index = None
     min_distance = float('inf')
 
     for i, pipe in enumerate(pipes):
-        pipe_right_edge = pipe.x + pipe.PIPE_TOP.get_width()  # Considerando a largura do cano
-        distance = pipe_right_edge - bird.x  # Distância até o final do cano
+        pipe_right_edge = pipe.x + pipe.PIPE_TOP.get_width()
+        distance = pipe_right_edge - bird.x
 
-        if distance > 0 and distance < min_distance:  # Apenas canos à frente do pássaro
+        if distance > 0 and distance < min_distance:
             min_distance = distance
             closest_index = i
-
     #print(f"Closest Pipe Index: {closest_index}, Bird X: {bird.x}")  # Debugging
+    
     return closest_index
 
-def score_handler(birds, pipes, score, pipe, genomes):
+def score_handler(birds, pipes, score, genomes):
     """
-    Atualiza a pontuação dos pássaros ao passarem pelos canos.
-    Aumenta a fitness dos genomas correspondentes.
+    Updates the birds score and awards fitness points to the genomes 
+    for each bird that passed the pipe
+
+        :param birds: type: list
+            list containing all bird objects
+
+        :param pipes: type: list
+            list containing all pipe objects
+
+        :param score: type: Score obj
+
+        :param genomes: type list
+            List containing the genomes for every bird
     """
     
     
@@ -179,8 +215,11 @@ def score_handler(birds, pipes, score, pipe, genomes):
 
 def check_crash(game_elements_dict):   
     """
-    Verifica colisões entre os pássaros e os elementos do jogo (bases e canos).
-    Remove pássaros que colidirem e penaliza seus genomas.
+    Checks every bird for colliding with the base or the pipes
+    and if True award negative points for the fitness genome and removes it from the game
+
+    :param game_elements_dict: type: dict
+        A dictionary containing all the class instances needed for the game to function
     """
 
     birds = game_elements_dict['birds']
@@ -226,11 +265,35 @@ def check_crash(game_elements_dict):
         del networks[index]
 
 def check_generation_crash(birds):
+    """
+    Checks if there is any bird alive in the current generation
+
+    :param birds: type: list
+        list containing all bird objects
+
+    """
     if len(birds) == 0:
         return True
     else: return False        
                         
 def fitness(genomes, config):
+    """
+    The main function of the script
+    What it does:
+        1. Setups game window & clock
+        2. Initializes all instances needed for the game
+        3. Main game loop
+            3a. Render the instances on the screen
+            3b. Get model output (Jump or no jump) and handle them for each bird
+            3c. Handle score increment and Crashes
+            3d. Check if all birds in the population has crashed, if so proceed to next generation
+
+    :param genomes: type: list
+    List containing the genomes for every bird
+
+    :param config: type: neat.config.Config
+    The NEAT configuration file object
+    """
     pygame.init()
 
     win = setup_game_window()
@@ -289,7 +352,7 @@ def fitness(genomes, config):
 
             check_crash(elements_dict)
 
-            score_handler(birds,pipes,score, pipe_index, genomes)
+            score_handler(birds,pipes,score, genomes)
 
             if check_generation_crash(birds):
                 crashed = True
