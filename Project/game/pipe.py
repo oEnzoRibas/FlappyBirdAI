@@ -34,6 +34,11 @@ class Pipe:
         self.rect_top.topleft = (self.x, self.top)
         self.rect_bottom.topleft = (self.x, self.bottom)
     
+    
+    @property
+    def width(self):
+        return self.PIPE_TOP.get_width()
+
     def move(self):
         self.x -= self.VEL
 

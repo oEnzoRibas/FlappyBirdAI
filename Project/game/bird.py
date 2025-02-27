@@ -80,6 +80,9 @@ class Bird:
                 self.cycle_bird_state()
                 self.animation_tick = 0
 
+    @property
+    def width(self):
+        return self.img[self.state].get_width()
 
     @staticmethod
     def tilt_bird(image, angle):

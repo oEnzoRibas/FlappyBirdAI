@@ -4,7 +4,9 @@ import os
 import math
 import neat
 import pickle
+import visualize
 from assets.__init__ import sprites_dict
+from visualize import plot_fitness_graph
 import matplotlib as plt
 from game.bird import Bird
 from game.pipe import Pipe
@@ -21,7 +23,6 @@ BASE_IMG = sprites_dict['base']
 BG_IMG = sprites_dict['bg-night']
 
 STAT_FONT = pygame.font.SysFont("comicsans",50)
-
 
 def quit_game():
     sys.exit()
@@ -78,9 +79,6 @@ def init_game_elements(genomes):
 
     pipe1 = Pipe(700)
     pipe2 = Pipe(pipe1.x + Pipe.INTERVAL)
-    
-    pipe_x_list = [pipe.x for pipe in [pipe1, pipe2]]
-    pipe_index = pipe_x_list.index(min(pipe_x_list))
 
     score = Score()
 
@@ -95,7 +93,6 @@ def init_game_elements(genomes):
         "score": score,
         "networks": networks_list,
         "genomes": genomes_list,
-        "pipe_index": pipe_index,
         "bird_counter": bird_counter,
         "generation_counter": generation_counter
     }
@@ -109,23 +106,46 @@ def pipes_animation_handler(pipe_list):
             pipe.passed = False
             pipe.x = pipe_list[index-1].x + pipe.INTERVAL
 
-def score_handler(birds, pipes, score, pipe_index, genomes):
-        if not check_generation_crash(birds):
-                
-            for pipe, bird in zip(pipes,birds):
-                if bird.x >= (pipe.x + pipe.PIPE_TOP.get_width()) and not pipe.passed:
+def get_closest_pipe_index(bird, pipes):
+    """
+    Retorna o índice do cano mais próximo que está à frente do pássaro.
+    Garante que só muda quando o pássaro ultrapassa completamente o cano.
+    """
+    closest_index = None
+    min_distance = float('inf')
+
+    for i, pipe in enumerate(pipes):
+        pipe_right_edge = pipe.x + pipe.PIPE_TOP.get_width()  # Considerando a largura do cano
+        distance = pipe_right_edge - bird.x  # Distância até o final do cano
+
+        if distance > 0 and distance < min_distance:  # Apenas canos à frente do pássaro
+            min_distance = distance
+            closest_index = i
+
+    #print(f"Closest Pipe Index: {closest_index}, Bird X: {bird.x}")  # Debugging
+    return closest_index
+
+def score_handler(birds, pipes, score, pipe, genomes):
+    """
+    Atualiza a pontuação dos pássaros ao passarem pelos canos.
+    Aumenta a fitness dos genomas correspondentes.
+    """
+    
+    
+    if not check_generation_crash(birds): 
+        for i, bird in enumerate(birds):
+            pipe_index = get_closest_pipe_index(bird, pipes)
+
+            if pipe_index is not None:
+                pipe = pipes[pipe_index]
+                #print(f"bird x: {bird.x} pipe x: {pipe.x + pipe.width}")
+                if bird.x >= (pipe.x + pipe.width - 5) and not pipe.passed:
+                    #print("passed")
                     score.score += 1
                     pipe.passed = True
 
-                    if pipe_index == 0:
-                        pipe_index = 1
-                    else: pipe_index = 0
-
                     for genome_id, genome in genomes:
-                        print(f"Quantidade de pássaros vivos: {len(birds)}")
-                        print(f"Pipe Index: {pipe_index}, Pipe X: {pipes[pipe_index].x}")
-                        print(f"Geração: {population.generation}")
-                        genome.fitness += 5
+                        genome.fitness += 5 
 
 def base_animation_handler(bases):
     for index, base in enumerate(bases,start=0):
@@ -134,16 +154,10 @@ def base_animation_handler(bases):
         if base.x + sprites_dict['base'].get_width() <= 0:
             base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
 
-def check_crash(game_elements_dict):
-    
-    import math
-
 def check_crash(game_elements_dict):   
     """
     Verifica colisões entre os pássaros e os elementos do jogo (bases e canos).
     Remove pássaros que colidirem e penaliza seus genomas.
-
-    THE OVERLAP METHOD KILLS THE APP (SO MUCH COMPUTACIONAL COST)
     """
 
     birds = game_elements_dict['birds']
@@ -154,42 +168,39 @@ def check_crash(game_elements_dict):
 
     to_remove = []
 
-    # Verifica colisão com a base (bounding box)
-    for index in range(len(birds)):
+    for index in range(len(birds) - 1, -1, -1):
         bird = birds[index]
+        genome = genomes[index][1]
 
-        # Verifica colisão com o chão
         if any(bird.rect.colliderect(base.rect) for base in bases):
-            genomes[index][1].fitness -= 50
+            genome.fitness -= 10
             to_remove.append(index)
-            continue  # Pula para o próximo pássaro
+            continue
 
-        # Verifica colisão com os canos
-        for pipe in pipes:
-            if bird.rect.colliderect(pipe.rect_top) or bird.rect.colliderect(pipe.rect_bottom):
-                # Se a bounding box bateu, faz a verificação de `overlap()`
-                if bird.get_mask().overlap(pipe.get_mask()[0], (pipe.x - bird.x, pipe.top - bird.y)):
-                    genomes[index][1].fitness -= 1
+        closest_pipe = min(
+            (pipe for pipe in pipes if pipe.rect_top.right > bird.rect.left),
+            key=lambda p: p.rect_top.right - bird.rect.left,
+            default=None
+        )
+
+        if closest_pipe:
+           
+            if bird.rect.colliderect(closest_pipe.rect_top) or bird.rect.colliderect(closest_pipe.rect_bottom):
+                
+                if bird.get_mask().overlap(closest_pipe.get_mask()[0], (closest_pipe.x - bird.x, closest_pipe.top - bird.y)) or \
+                   bird.get_mask().overlap(closest_pipe.get_mask()[1], (closest_pipe.x - bird.x, closest_pipe.bottom - bird.y)):
+                    genome.fitness -= 1
                     to_remove.append(index)
-                    break  # Já colidiu, não precisa testar mais canos
+                    continue
 
-                if bird.get_mask().overlap(pipe.get_mask()[1], (pipe.x - bird.x, pipe.bottom - bird.y)):
-                    genomes[index][1].fitness -= 1
-                    to_remove.append(index)
-                    break  # Já colidiu, não precisa testar mais canos
+        if bird.y < 0:
+            genome.fitness -= 10
+            to_remove.append(index)
 
-            # Se o pássaro ultrapassar o topo da tela enquanto está em um cano
-            if bird.y < 0 and pipe.x < bird.x < (pipe.x + pipe.PIPE_TOP.get_width()):
-                genomes[index][1].fitness -= 50
-                to_remove.append(index)
-                break
-
-    # Remove pássaros e seus dados (de trás para frente para evitar reindexação)
-    for index in reversed(to_remove):
-        del networks[index]
-        del genomes[index]
+    for index in to_remove:
         del birds[index]
-    
+        del genomes[index]
+        del networks[index]
 
 def check_generation_crash(birds):
     if len(birds) == 0:
@@ -218,8 +229,6 @@ def handle_quit(event):
 def handle_restart(event):
     if (event.type == pygame.KEYDOWN and event.key == pygame.K_r) or (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
         restart()
-
-
                         
 def fitness(genomes, config):
     pygame.init()
@@ -236,7 +245,6 @@ def fitness(genomes, config):
     score = elements_dict['score']
     networks = elements_dict["networks"]
     genomes = elements_dict["genomes"]
-    pipe_index = elements_dict["pipe_index"]
     bird_counter = elements_dict["bird_counter"]
     generation_counter = elements_dict["generation_counter"]
 
@@ -263,11 +271,18 @@ def fitness(genomes, config):
                 #print(f"index {index} bird {bird}")
 
                 genomes[index][1].fitness += 0.1
-
+                
+                
+                
+                pipe_index = get_closest_pipe_index(bird, pipes)
+                bird_height = (bird.y)
+                pipe_top_height = (pipes[pipe_index].top)
+                pipe_bottom_height = (pipes[pipe_index].bottom)
+                #print(f"pipe index: {pipe_index}")
                 # passing to the model the bird location, pipes location
-                output = networks[index].activate(((abs(bird.y + bird.height/2)),
-                                                abs(pipes[pipe_index].top - bird.y),
-                                                abs((bird.y+bird.height) - pipes[pipe_index].bottom)))
+                output = networks[index].activate(((bird_height),
+                                                abs(bird_height - pipe_top_height),
+                                                abs(bird_height - pipe_bottom_height)))
             
                 if output[0] > 0.5:    
                     bird.jump()
@@ -292,8 +307,6 @@ def fitness(genomes, config):
 
         pygame.display.update() 
 
-
-
 if __name__ == '__main__':
     
     local_dir = os.path.dirname(__file__)
@@ -312,7 +325,7 @@ if __name__ == '__main__':
     population.add_reporter(statistics)
 
     # Run fitness function
-    population.run(fitness, 100)
+    population.run(fitness, 50)
 
     # Get best genome and save it
     winner = statistics.best_genome()
@@ -324,7 +337,7 @@ if __name__ == '__main__':
 
     # Visualize fitness graph
     print("Saving fitness graph...")
-    #plot_fitness_graph(statistics)
+    plot_fitness_graph(statistics)
 
 
 
