@@ -398,6 +398,3 @@ if __name__ == '__main__':
     # Visualize fitness graph
     print("Saving fitness graph...")
     plot_fitness_graph(statistics)
-
-
-
