@@ -23,6 +23,23 @@ def quit_game():
     sys.exit()
 
 def draw_window(win, bird, pipes, bases, score):
+    """
+    Draws/Renders the instaces for the game and update the screen with pygame Update Method
+
+        :param win: type: pygame.surface
+            game screen
+
+        :param bird: type: Bird Object
+            The Player's Bird
+
+        :param pipes: type: list
+            list containing all pipe objects
+        
+        :param bases: type: list
+            list containing all base objects
+
+        :param score: type: Score obj
+    """
     
     bg = "bg-night" if score.score % 50 == 0 and score.score > 0 else "bg-day"
     win.blit(sprites_dict[bg], (0,0))
@@ -49,6 +66,13 @@ def setup_game_window():
     return screen
 
 def init_game_elements():
+    """
+    Initializes the basic elements for the game to run:
+        Generates the Bird, Bases, Pipes and Score
+
+    :return: type: dictionary
+        Dictionary containing all the Elements created.
+    """
     bird = Bird(230,350)
     base1 = Base(0, WIN_HEIGHT - Base.height + 200)
     base2 = Base(Base.width, WIN_HEIGHT- Base.height + 200)
@@ -65,6 +89,14 @@ def init_game_elements():
     }
 
 def pipes_animation_handler(pipe_list):
+    """
+    Controls when and how the Pipes should be moving on the screen
+
+    Each time one pipe passes the end of the screen it gets repositioned for the end of the end again
+
+    :param pipe_list: type: list
+        list containing all pipes
+    """
     for index, pipe in enumerate(pipe_list, start=0):
         pipe.move()
 
@@ -74,12 +106,32 @@ def pipes_animation_handler(pipe_list):
             pipe.x = pipe_list[index-1].x + pipe.INTERVAL
 
 def score_handler(bird, pipes, score):
-        for pipe in pipes:
-            if bird.x >= (pipe.x + pipe.x) and not pipe.passed:
-                score.score += 1
-                pipe.passed = True
+    """
+    Updates the score each time the bird passed a pipe
+
+        :param bird: type: Bird Object
+            The Player's Bird
+
+        :param pipes: type: list
+            list containing all pipe objects
+
+        :param score: type: Score obj
+    """
+
+    for pipe in pipes:
+        if bird.x >= (pipe.x + pipe.x) and not pipe.passed:
+            score.score += 1
+            pipe.passed = True
 
 def base_animation_handler(bases):
+    """
+    Controls when and how the Bases should be moving on the screen
+
+    Each time one bases passes the end of the screen it gets repositioned for the end of the end again
+
+    :param bases: type: list
+        list containing all base objects
+    """
     for index, base in enumerate(bases,start=0):
         base.move()
 
@@ -87,6 +139,18 @@ def base_animation_handler(bases):
             base.x = bases[index-1].x + sprites_dict['base'].get_width()- 5
 
 def check_crash(bird, bases, pipes):
+    """
+    Checks if the bird has collided with the base or the pipes
+
+    :param bird: type: Bird Object
+            The Player's Bird
+    
+    :param bases: type: list
+        list containing all base objects
+
+    :param pipes: type: list
+        list containing all pipe objects
+    """
     for b_img, base in zip(bird.img, bases):
     
         if base.collide(bird,b_img):
@@ -99,19 +163,42 @@ def check_crash(bird, bases, pipes):
     return False
 
 def gameover_text(win):
+    """
+    Draws the GAMEOVER Screen
+
+    :param win: type: pygame.surface
+        The game screen
+    """
     win.blit(sprites_dict['gameover'].convert_alpha(),
              (((WIN_WIDTH / 2)) - (sprites_dict['gameover'].get_width() / 2),
              (WIN_HEIGHT / 2) - (sprites_dict['gameover'].get_height() / 2)))
 
 def startgame_text(win):
+        """
+        Draws the GAMESTART Screen
+        
+        :param win: type: pygame.surface
+            The game screen
+        """
         win.blit(sprites_dict['startgame'].convert_alpha(),
              (((WIN_WIDTH / 2)) - (sprites_dict['startgame'].get_width() / 2),
              (WIN_HEIGHT / 2) - (sprites_dict['startgame'].get_height() / 2)))
 
 def restart():
+    """
+    Restarts the main game loop
+    """
     main()
 
 def handle_gameover(event):
+    """
+    Checks if the players has pressed any button that should end or restart the game when GAMEOVER
+
+    if True then runs the quit_game() function.
+
+    :params event: type: pygame.event
+        The Key(s) the user is pressing
+    """
     if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE)):
         quit_game()
         pygame.quit()
@@ -121,6 +208,16 @@ def handle_gameover(event):
         restart()
 
 def main():
+    """
+    The main function of the script
+        1. Setups game window & clock
+        2. Initializes all instances needed for the game
+        3. Main game loop
+            Reads and handle all players Inputs
+            Checks for GAMEOVER
+                If True Handler GAMEOVER with quit or restart
+            Render the instances on the screen
+    """
 
     pygame.init()
 

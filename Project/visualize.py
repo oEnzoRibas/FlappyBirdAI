@@ -18,7 +18,7 @@ def plot_fitness_graph(statistics):
     And finally saves the plotted graph into the model directory
 
     :param statistics: type: neat.statistics.StatisticsReporter
-    Statistics reporter object that contains all relevant information about the training progress
+        Statistics reporter object that contains all relevant information about the training progress
     """
     generation_number = range(0, len(statistics.generation_statistics))
     best_fitness = [genome.fitness for genome in statistics.most_fit_genomes]
