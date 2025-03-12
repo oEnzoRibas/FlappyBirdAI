@@ -1,6 +1,7 @@
 """
 Flappy Bird Bird Class
-Responsible for creating the Bird Object for the game
+Responsible for creating the Bird Object for the game.
+    For the Bird's movement, jumping, and collision detection
 """
 
 import pygame
