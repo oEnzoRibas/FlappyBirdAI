@@ -5,6 +5,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import os
+from datetime import datetime
 
 
 def plot_fitness_graph(statistics):
@@ -35,6 +36,8 @@ def plot_fitness_graph(statistics):
     plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.legend(loc='best')
+    date_text = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    plt.text(0.95, 0.01, date_text, verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes, color='black', fontsize=8)
     
     plt.savefig(os.path.join("models", "fitness-{:.0f}.png".format(statistics.best_genome().fitness)), format='png')
 
