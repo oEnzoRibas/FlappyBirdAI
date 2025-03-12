@@ -64,7 +64,9 @@ def draw_window(win, birds, pipes, bases, score, bird_counter, generation_counte
         :param score: type: Score obj
     """
     
-    bg = "bg-night" if score.score % 50 == 0 and score.score > 0 else "bg-day"
+    time_change = (score.score // 50) % 2 == 1
+
+    bg = "bg-night" if time_change else "bg-day"
     win.blit(sprites_dict[bg], (0,0))
     
     for pipe in pipes:
