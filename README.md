@@ -3,6 +3,7 @@
 This project implements an AI to play the Flappy Bird game using the **NEAT (NeuroEvolution of Augmenting Topologies)** algorithm. The AI learns to navigate between pipes and achieve higher scores through evolution over generations.
 
 ## 📌 Table of Contents
+- [Showcase](#showcase)
 - [Motivation](#-motivation)
 - [Project Structure](#-project-structure)
 - [Requirements](#-requirements)
@@ -19,6 +20,10 @@ This project implements an AI to play the Flappy Bird game using the **NEAT (Neu
 - [NEAT Algorithm Overview](#-neat-algorithm-overview)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
+
+## Showcase
+### NEAT Playing Flappy Bird:
+![Gameplay Demo](./media/showcase/neat_run-show-case.gif)
 
 ## 🎯 Motivation
 This project was created as a friendly challenge inspired by **@SuperOats** and as an exploration of the NEAT algorithm and its applications in reinforcement learning.
