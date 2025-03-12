@@ -3,22 +3,22 @@
 This project implements an AI to play the Flappy Bird game using the **NEAT (NeuroEvolution of Augmenting Topologies)** algorithm. The AI learns to navigate between pipes and achieve higher scores through evolution over generations.
 
 ## 📌 Table of Contents
-- [Motivation](#motivation)
-- [Project Structure](#project-structure)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Running the Game (Playable)](#running-the-game-playable)
-  - [Training the AI (Non-playable)](#training-the-ai-non-playable)
-  - [Visualizing Training Progress](#visualizing-training-progress)
-- [Game Elements](#game-elements)
-  - [Bird](#bird)
-  - [Pipe](#pipe)
-  - [Base](#base)
-  - [Score](#score)
-- [NEAT Algorithm Overview](#neat-algorithm-overview)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+- [Motivation](#-motivation)
+- [Project Structure](#-project-structure)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Running the Game (Playable)](#-running-the-game-playable)
+  - [Training the AI (Non-playable)](#-training-the-ai-non-playable)
+  - [Visualizing Training Progress](#-visualizing-training-progress)
+- [Game Elements](#-game-elements)
+  - [Bird](#-bird)
+  - [Pipe](#-pipe)
+  - [Base](#-base)
+  - [Score](#-score)
+- [NEAT Algorithm Overview](#-neat-algorithm-overview)
+- [License](#-license)
+- [Acknowledgements](#-acknowledgements)
 
 ## 🎯 Motivation
 This project was created as a friendly challenge inspired by **@SuperOats** and as an exploration of the NEAT algorithm and its applications in reinforcement learning.
@@ -57,20 +57,20 @@ This project was created as a friendly challenge inspired by **@SuperOats** and 
 ```
 
 ## 🚀 Usage
-### Running the Game (Playable)
+### 🔥 Running the Game (Playable)
 To run the Flappy Bird game manually:
 ```sh
 python run.py
 ```
 
-### Training the AI (Non-playable)
+### 🧩 Training the AI (Non-playable)
 To train the AI using the NEAT algorithm:
 ```sh
 python neat_run.py
 ```
 When the training is completed, the best model will be saved in the `models/` directory.
 
-### Visualizing Training Progress
+### 📊 Visualizing Training Progress
 To generate graphs showing training progress:
 ```sh
 python visualize.py
@@ -78,16 +78,16 @@ python visualize.py
 The graphs are saved in the `models/` directory.
 
 ## 🎮 Game Elements
-### Bird
+### 🐦 Bird
 Responsible for the bird's movement, jumping, and collision detection.
 
-### Pipe
+### 🟢 Pipe
 Controls the pipes' movement and handles collisions with the bird.
 
-### Base
+### 🟫 Base
 Manages the moving base at the bottom of the screen.
 
-### Score
+### 🔢 Score
 Tracks and renders the score on the screen.
 
 ## 🧠 NEAT Algorithm Overview
