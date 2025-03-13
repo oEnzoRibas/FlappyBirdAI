@@ -23,7 +23,7 @@ This project implements an AI to play the Flappy Bird game using the **NEAT (Neu
 
 ## Showcase
 ### NEAT Playing Flappy Bird:
-![Gameplay Demo](media/Showcase/neat_run-show-case_resized.gif)
+![Gameplay Demo](media/Showcase/neat_run_reduzido.gif)
 
 ## 🎯 Motivation
 This project was created as an exploration of the NEAT algorithm and its applications in reinforcement learning.
