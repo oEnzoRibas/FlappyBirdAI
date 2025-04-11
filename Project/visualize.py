@@ -5,6 +5,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import os
+from datetime import datetime
 
 
 def plot_fitness_graph(statistics):
@@ -18,7 +19,7 @@ def plot_fitness_graph(statistics):
     And finally saves the plotted graph into the model directory
 
     :param statistics: type: neat.statistics.StatisticsReporter
-    Statistics reporter object that contains all relevant information about the training progress
+        Statistics reporter object that contains all relevant information about the training progress
     """
     generation_number = range(0, len(statistics.generation_statistics))
     best_fitness = [genome.fitness for genome in statistics.most_fit_genomes]
@@ -35,6 +36,8 @@ def plot_fitness_graph(statistics):
     plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.legend(loc='best')
+    date_text = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    plt.text(0.95, 0.01, date_text, verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes, color='black', fontsize=8)
     
     plt.savefig(os.path.join("models", "fitness-{:.0f}.png".format(statistics.best_genome().fitness)), format='png')
 

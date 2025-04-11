@@ -1,3 +1,8 @@
+"""
+Flappy Bird Base Class
+Responsible for creating the moving Base for the game.
+"""
+
 import pygame
 from assets.__init__ import sprites_dict
 
@@ -19,6 +24,15 @@ class Base:
 
 
     def __init__(self, x, y):
+        """
+        Base class' Constructor
+
+        :param x: type: int
+            x pixel coordinates of the Base on the screen in reference to the left corner of the sprite
+
+        :param y: type: int
+            y pixel coordinates of the base on the screen in reference to the left corner of the sprite
+        """
         self._y = y
         self._x = x
         self._rect = None
@@ -43,10 +57,10 @@ class Base:
         Returns True if Collided 
 
         :param bird: type: Bird Obj
-        List containing the loaded pygame bird state images
+            List containing the loaded pygame bird state images
 
         :param bird_img: type: pygame.Surface
-        pygame sprite of the bird
+            pygame sprite of the bird
 
         :return: type: boolean
         """
@@ -64,7 +78,7 @@ class Base:
         Draws/renders the base to the pygame screen
 
         :param win: type: pygame.surface
-        The surface/screen of the game for displaying purposes
+            The surface/screen of the game for displaying purposes
         """
         self._rect = win.blit(self.IMG, (self._x, self._y))
         

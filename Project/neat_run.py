@@ -28,6 +28,14 @@ def quit_game():
     sys.exit()
 
 def handle_quit(event):
+    """
+    Checks if the players has pressed any button that should end the game and close the screen
+
+    if True then runs the quit_game() function.
+
+    :params event: type: pygame.event
+        The Key(s) the user is pressing
+    """
     if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE)):
         quit_game()
         pygame.quit()
@@ -35,7 +43,7 @@ def handle_quit(event):
 
 def draw_window(win, birds, pipes, bases, score, bird_counter, generation_counter):
     """
-        Draws/Renders the instaces for the game
+        Draws/Renders the instaces for the game and update the screen with pygame Update Method
 
         :param win: type: pygame.surface
             game screen
@@ -56,7 +64,9 @@ def draw_window(win, birds, pipes, bases, score, bird_counter, generation_counte
         :param score: type: Score obj
     """
     
-    bg = "bg-night" if score.score % 50 == 0 and score.score > 0 else "bg-day"
+    time_change = (score.score // 50) % 2 == 1
+
+    bg = "bg-night" if time_change else "bg-day"
     win.blit(sprites_dict[bg], (0,0))
     
     for pipe in pipes:
@@ -79,6 +89,11 @@ def draw_window(win, birds, pipes, bases, score, bird_counter, generation_counte
     pygame.display.update()
 
 def setup_game_window():
+    """
+    Sets the Pygame Game Window for the game with the GLOBAL VARIABLES for Width and Height
+
+    :return: type: pygame.display
+    """
     
     screen = pygame.display.set_mode((WIN_WIDTH,WIN_HEIGHT))
 
@@ -88,6 +103,18 @@ def setup_game_window():
     return screen
 
 def init_game_elements(genomes):
+    """
+    Initializes the basic elements for the game to run:
+        1. Generates empty lists for the birds,networks, and genomes.
+        2. Generates and configures each bird for each genome and each network, and sets them to the lists.
+        3. Generates the Bases, Pipes, Score, Bird Counter
+
+    :param genomes: type: list
+        List containing the genomes for every bird
+
+    :return: type: dictionary
+        Dictionary containing all the Elements created.
+    """
     birds_list = []
     networks_list = []
     genomes_list = []
@@ -165,6 +192,8 @@ def get_closest_pipe_index(bird, pipes):
 
     :param pipes: type: list
         list containing all pipe objects
+    :return: type: int
+        The closest next Pipe's Index in reference to the Bird
     """
     closest_index = None
     min_distance = float('inf')
@@ -216,6 +245,7 @@ def score_handler(birds, pipes, score, genomes):
 def check_crash(game_elements_dict):   
     """
     Checks every bird for colliding with the base or the pipes
+
     and if True award negative points for the fitness genome and removes it from the game
 
     :param game_elements_dict: type: dict
@@ -269,7 +299,9 @@ def check_generation_crash(birds):
     Checks if there is any bird alive in the current generation
 
     :param birds: type: list
-        list containing all bird objects
+        list containing all bird objects~
+
+    :return: type: boolean
 
     """
     if len(birds) == 0:
@@ -279,7 +311,6 @@ def check_generation_crash(birds):
 def fitness(genomes, config):
     """
     The main function of the script
-    What it does:
         1. Setups game window & clock
         2. Initializes all instances needed for the game
         3. Main game loop
@@ -289,10 +320,10 @@ def fitness(genomes, config):
             3d. Check if all birds in the population has crashed, if so proceed to next generation
 
     :param genomes: type: list
-    List containing the genomes for every bird
+        List containing the genomes for every bird
 
     :param config: type: neat.config.Config
-    The NEAT configuration file object
+        The NEAT configuration file object
     """
     pygame.init()
 
@@ -368,6 +399,16 @@ def fitness(genomes, config):
         pygame.display.update() 
 
 if __name__ == '__main__':
+    """
+    1. Determine the Local Directory and Configuration Path
+    2. Load the NEAT Configuration
+    3. Create the Population
+    4. Initialize the Statistics Reporter
+    5. Run the Fitness Function
+    6. Get the Best Genome and Save It
+    7. Save the Best Model
+    8. Visualize the Fitness Graph
+    """
     
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, "neat.config.txt")

@@ -1,3 +1,8 @@
+"""
+Flappy bird Pipe class.
+Responsible for creating and moving pipes in the game
+"""
+
 import pygame, random
 import math
 from assets.__init__ import sprites_dict
@@ -20,6 +25,12 @@ class Pipe:
     INTERVAL = 380
 
     def __init__(self, x):
+        """
+        Pipe Class' Constructor
+
+        :param x: type: int
+            x coordinates of the pipe in reference to the left corner of the sprite
+        """
         self.x = x
         self.height = 0
         self.gap = 100
@@ -37,6 +48,9 @@ class Pipe:
         self.set_height()
 
     def set_height(self):
+        """
+        Sets the pipe height randomly
+        """
         self.height = random.randrange(50,450)
         self.top = self.height - self.PIPE_TOP.get_height()
         self.bottom = self.height + self.GAP
@@ -47,6 +61,10 @@ class Pipe:
 
     @property
     def width(self):
+        """
+        :return: type: int
+            returns the pipe width
+        """
         return self.PIPE_TOP.get_width()
 
     def move(self):
@@ -55,7 +73,6 @@ class Pipe:
         """
         self.x -= self.VEL
 
-        # Atualiza a posição dos retângulos quando os canos se movem
         self.rect_top.x = self.x
         self.rect_bottom.x = self.x
 
@@ -63,8 +80,8 @@ class Pipe:
         """
         Draws/renders the pipe to the pygame screen
 
-        :param screen: type: pygame.surface
-        The surface/screen of the game for displaying purposes
+        :param win: type: pygame.surface
+            The surface/screen of the game for displaying purposes
         """
         win.blit(self.PIPE_TOP, (self.x, self.top))
         win.blit(self.PIPE_BOTTOM, (self.x, self.bottom))
@@ -74,7 +91,7 @@ class Pipe:
         Extracts the mask from the sprite to provide pixel based collision detection
 
         :return: type: pygame.mask.Mask
-        The extracted mask object
+            The extracted mask object
         """
         masks = [pygame.mask.from_surface(pipe) for pipe in [self.PIPE_TOP, self.PIPE_BOTTOM]]
 
@@ -94,7 +111,7 @@ class Pipe:
         Returns True if Collided 
 
         :param bird: type: Bird Obj
-        List containing the loaded pygame bird state images
+            List containing the loaded pygame bird state images
 
         :return: type: boolean
         """

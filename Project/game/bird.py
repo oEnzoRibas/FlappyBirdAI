@@ -1,3 +1,9 @@
+"""
+Flappy Bird Bird Class
+Responsible for creating the Bird Object for the game.
+    For the Bird's movement, jumping, and collision detection
+"""
+
 import pygame
 from assets.__init__ import sprites_dict
 
@@ -19,6 +25,15 @@ class Bird:
     state_cycle_rate = 5
 
     def __init__(self, x, y):
+        """
+        Bird Class' Constructor
+
+        :param x: type: int
+            the x position for the bird in reference to the left corner of the sprite
+        
+        :param y: type: int
+            the y position for the bird in reference to the left corner of the sprite
+        """
         self._x = x
         self._y = y
         self.state = 0
@@ -33,10 +48,16 @@ class Bird:
     
     @property
     def x(self):
+        """
+        Gets the x coordenate
+        """
         return self._x
 
     @property
     def y(self):
+        """
+        Gets the y coordenate
+        """
         return self._y
     
     @property
@@ -118,6 +139,9 @@ class Bird:
 
     @property
     def width(self):
+        """
+        Gets the bird sprite width
+        """
         return self.img[self.state].get_width()
 
     @staticmethod
@@ -126,13 +150,13 @@ class Bird:
         Rotates the pygame sprite according to the provided angle and returns the rotated sprite.
 
         :param image: type: list
-        List containing the loaded pygame bird state images
+            List containing the loaded pygame bird state images
 
         :param angle: type: int
-        Angle of tilt for the bird
+            Angle of tilt for the bird
 
         :return: type: pygame.Surface
-        pygame sprite of the tilted bird
+            pygame sprite of the tilted bird
         """
         tilted_bird = pygame.transform.rotate(image, angle)
 
@@ -151,8 +175,8 @@ class Bird:
         """
         Draws/renders the bird to the pygame screen
 
-        :param screen: type: pygame.surface
-        The surface/screen of the game for displaying purposes
+        :param win: type: pygame.surface
+            The surface/screen of the game for displaying purposes
         """
         self.flap_animation_tick_handler()
 
@@ -163,7 +187,7 @@ class Bird:
         Extracts the mask from the sprite to provide pixel based collision detection
 
         :return: type: pygame.mask.Mask
-        The extracted mask object
+            The extracted mask object
         """
         mask = pygame.mask.from_surface(self.tilt_bird(self.img[self.state], self.tilt))
         return mask
